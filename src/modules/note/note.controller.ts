@@ -45,7 +45,22 @@ const getAllNote = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getSingleNotes = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const id = req.params.id;
+
+    const note = await NoteModel.findOne({ user: userId, _id: id }).select('name createdAt properties.secure_url properties.bytes')
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "Note Retrived Successfully.",
+        data: note
+    })
+})
+
+
 export const NoteController = {
     uploadNoteController,
-    getAllNote
+    getAllNote,
+    getSingleNotes
 }

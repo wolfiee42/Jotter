@@ -33,5 +33,29 @@ const getAllFolders = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const getSingleFolder = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const id = req.params.id;
 
-export const FolderController = { createFolderController, getAllFolders }
+  const folder = await FolderModel.findOne({ _id: id, user: userId })
+    .populate({
+      path: 'imageList',
+      select: 'name createdAt properties.secure_url properties.bytes properties.width properties.height properties.format'
+    })
+    .populate({
+      path: 'noteList',
+      select: 'name createdAt properties.secure_url properties.bytes'
+    })
+    .populate({
+      path: 'pdfList',
+      select: 'name createdAt properties.secure_url properties.bytes'
+    });
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Folder Retrived successfully.",
+    data: folder
+  })
+})
+
+export const FolderController = { createFolderController, getAllFolders, getSingleFolder }

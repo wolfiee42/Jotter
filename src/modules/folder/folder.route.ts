@@ -22,4 +22,6 @@ router.get(
   FolderController.getAllFolders
 )
 
+router.get('/:id', Authentication, Authorize({ role: 'user' }), FolderController.getSingleFolder)
+
 export const folderRoute = router

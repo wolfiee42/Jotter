@@ -21,4 +21,10 @@ router.get(
     NoteController.getAllNote
 )
 
+router.get('/:id',
+    Authentication,
+    Authorize({ role: 'user' }),
+    NoteController.getSingleNotes
+)
+
 export const NoteRouter = router

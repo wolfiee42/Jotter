@@ -21,4 +21,10 @@ router.get(
     PDFController.getAllPDF
 )
 
+router.get('/:id',
+    Authentication,
+    Authorize({ role: 'user' }),
+    PDFController.getSinglePDF
+)
+
 export const PDFRouter = router

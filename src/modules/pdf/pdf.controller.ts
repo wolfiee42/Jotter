@@ -45,7 +45,21 @@ const getAllPDF = catchAsync(async (req: Request, res: Response) => {
     })
 })
 
+const getSinglePDF = catchAsync(async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+    const id = req.params.id;
+
+    const PDF = await PDFModel.findOne({ user: userId, _id: id }).select('name createdAt properties.secure_url properties.bytes')
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "PDF Retrived Successfully.",
+        data: PDF
+    })
+})
+
 export const PDFController = {
     uploadPDFController,
-    getAllPDF
+    getAllPDF,
+    getSinglePDF
 }

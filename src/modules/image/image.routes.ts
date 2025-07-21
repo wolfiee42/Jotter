@@ -21,4 +21,9 @@ router.get(
   imageController.getAllImages
 )
 
+router.get('/:id',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.getSingleImage
+)
 export const ImageRouter = router

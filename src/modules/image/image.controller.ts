@@ -46,7 +46,21 @@ const getAllImages = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const getSingleImage = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const id = req.params.id;
+
+  const image = await ImageModel.findOne({ user: userId, _id: id }).select("name createdAt properties.secure_url properties.bytes properties.width properties.height properties.format")
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "Image Retrived Successfully.",
+    data: image
+  })
+})
+
 export const imageController = {
   uploadImageController,
-  getAllImages
+  getAllImages,
+  getSingleImage
 }
