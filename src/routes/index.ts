@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { UserRoute } from '../modules/user/user.route'
 import { ImageRouter } from '../modules/image/image.routes'
 import { folderRoute } from '../modules/folder/folder.route'
+import { NoteRouter } from '../modules/note/note.route'
 
 const router = Router()
 
@@ -17,6 +18,10 @@ const applicationRoutes = [
   {
     path: '/image',
     route: ImageRouter,
+  },
+  {
+    path: '/note',
+    route: NoteRouter,
   },
 ]
 
