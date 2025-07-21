@@ -14,4 +14,11 @@ router.post(
     PDFController.uploadPDFController,
 )
 
+router.get(
+    '/all',
+    Authentication,
+    Authorize({ role: 'user' }),
+    PDFController.getAllPDF
+)
+
 export const PDFRouter = router

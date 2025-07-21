@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { PDFService } from './pdf.service'
+import { PDFModel } from './pdf.model'
 
 const uploadPDFController = catchAsync(
     async (req: Request, res: Response) => {
@@ -33,6 +34,18 @@ const uploadPDFController = catchAsync(
     },
 )
 
+const getAllPDF = catchAsync(async (req: Request, res: Response) => {
+    const id = req.user?.id;
+    const allPDFs = await PDFModel.find({ user: id }).select("name updatedAt ")
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "All Pdfs Retrived successfully.",
+        data: allPDFs
+    })
+})
+
 export const PDFController = {
     uploadPDFController,
+    getAllPDF
 }

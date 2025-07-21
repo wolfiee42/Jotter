@@ -15,4 +15,11 @@ router.post(
   FolderController.createFolderController,
 )
 
+router.get(
+  '/all',
+  Authentication,
+  Authorize({ role: 'user' }),
+  FolderController.getAllFolders
+)
+
 export const folderRoute = router

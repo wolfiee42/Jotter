@@ -3,6 +3,7 @@ import { imageService } from './image.service'
 import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
+import { ImageModel } from './image.model'
 
 const uploadImageController = catchAsync(
   async (req: Request, res: Response) => {
@@ -34,6 +35,18 @@ const uploadImageController = catchAsync(
   },
 )
 
+const getAllImages = catchAsync(async (req: Request, res: Response) => {
+  const id = req.user?.id;
+  const allImages = await ImageModel.find({ user: id }).select("name updatedAt")
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: "All Images Retrived Successfully.",
+    data: allImages
+  })
+})
+
 export const imageController = {
   uploadImageController,
+  getAllImages
 }

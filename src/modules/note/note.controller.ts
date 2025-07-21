@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { NoteService } from './note.service'
+import { NoteModel } from './note.model'
 
 const uploadNoteController = catchAsync(
     async (req: Request, res: Response) => {
@@ -33,6 +34,18 @@ const uploadNoteController = catchAsync(
     },
 )
 
+const getAllNote = catchAsync(async (req: Request, res: Response) => {
+    const id = req.user?.id;
+    const allNotes = await NoteModel.find({ user: id }).select("name updatedAt ")
+    sendResponse(res, {
+        success: true,
+        statusCode: 200,
+        message: "All Notes Retrived successfully.",
+        data: allNotes
+    })
+})
+
 export const NoteController = {
     uploadNoteController,
+    getAllNote
 }

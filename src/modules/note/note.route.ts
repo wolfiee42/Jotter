@@ -14,4 +14,11 @@ router.post(
     NoteController.uploadNoteController,
 )
 
+router.get(
+    '/all',
+    Authentication,
+    Authorize({ role: 'user' }),
+    NoteController.getAllNote
+)
+
 export const NoteRouter = router

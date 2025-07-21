@@ -14,4 +14,11 @@ router.post(
   imageController.uploadImageController,
 )
 
+router.get(
+  '/all',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.getAllImages
+)
+
 export const ImageRouter = router
