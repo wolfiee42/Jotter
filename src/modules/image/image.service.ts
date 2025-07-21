@@ -55,9 +55,9 @@ const updateSpaceWithImage = async (
 }
 const updateFolderWithImage = async (
   imageId: ObjectId,
-  userId: ObjectId,
+  folderId: ObjectId,
 ): Promise<void> => {
-  const folder = await FolderModel.findOne({ user: userId })
+  const folder = await FolderModel.findById(folderId)
   if (!folder) {
     throw new Error('Folder not found')
   }

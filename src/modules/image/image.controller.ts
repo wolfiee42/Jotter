@@ -8,7 +8,8 @@ const uploadImageController = catchAsync(
   async (req: Request, res: Response) => {
     const body = JSON.parse(req.body.data || '{}')
     const id = req.user?.id
-    const file = req.file
+    const file = req.file;
+
     if (!file) {
       throw new Error('No file uploaded')
     }
@@ -18,10 +19,12 @@ const uploadImageController = catchAsync(
       savedFile._id as ObjectId,
       id as ObjectId,
     )
-    await imageService.updateFolderWithImage(
-      savedFile._id as ObjectId,
-      id as ObjectId,
-    )
+    if (body.folderId) {
+      await imageService.updateFolderWithImage(
+        savedFile._id as ObjectId,
+        body.folderId as ObjectId,
+      )
+    }
     sendResponse(res, {
       success: true,
       message: 'Image uploaded successfully',
