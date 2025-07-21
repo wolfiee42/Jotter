@@ -1,7 +1,7 @@
-import { model, Schema } from 'mongoose';
-import { TForgetPassword, TUser, UserRole } from './user.interface';
-import bcrypt from 'bcryptjs';
-import config from '../../config';
+import { model, Schema } from 'mongoose'
+import { TForgetPassword, TUser, UserRole } from './user.interface'
+import bcrypt from 'bcryptjs'
+import config from '../../config'
 
 const UserSchema = new Schema<TUser>(
   {
@@ -37,48 +37,39 @@ const UserSchema = new Schema<TUser>(
   {
     timestamps: true,
   },
-);
+)
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    return next();
+    return next()
   }
   if (this.password) {
-    this.password = await bcrypt.hash(
-      this.password,
-      Number(config.bcrypt_salt),
-    );
+    this.password = await bcrypt.hash(this.password, Number(config.bcrypt_salt))
   }
-  next();
-});
+  next()
+})
 
-export const UserModel = model('User', UserSchema);
-
+export const UserModel = model('User', UserSchema)
 
 const OTPSchema = new Schema<TForgetPassword>(
   {
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
     email: {
       type: String,
-      required: true
+      required: true,
     },
     otp: {
       type: String,
-      required: true
+      required: true,
     },
     isVerified: {
       type: Boolean,
       required: true,
-      default: false
-    }
+      default: false,
+    },
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 )
 
-export const OTPModel = model('OTP', OTPSchema);
+export const OTPModel = model('OTP', OTPSchema)

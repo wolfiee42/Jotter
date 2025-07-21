@@ -14,4 +14,5 @@ export default {
   expires_in_refresh_token: process.env.REFRESH_EXPIRE_IN,
   bcrypt_salt: process.env.BCRYPT_SALT,
   google_login_secret: process.env.GOOGLE_LOGIN_SECRET,
+  email_token: process.env.EMAIL_TOKEN,
 }
