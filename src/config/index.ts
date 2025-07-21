@@ -15,4 +15,7 @@ export default {
   bcrypt_salt: process.env.BCRYPT_SALT,
   google_login_secret: process.env.GOOGLE_LOGIN_SECRET,
   email_token: process.env.EMAIL_TOKEN,
+  cloudinary_cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
+  cloudinary_secret_key: process.env.CLOUDINARY_SECRET_KEY,
 }
