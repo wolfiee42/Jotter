@@ -8,37 +8,58 @@ import { checkUser, isUsernameAvailable } from '../../utils/utils'
 import bcrypt from 'bcryptjs'
 import mongoose from 'mongoose'
 import { sendEmail } from '../../utils/sendEmail'
+import { SpaceModel } from '../space/space.model'
 
 const userOnboardingByEmailPassword = catchAsync(
   async (req: Request, res: Response) => {
     const { email, username } = req.body
     const payload = req.body
 
-    const existingUser = await UserModel.findOne({ email })
+    const session = await mongoose.startSession()
+    let user, spaceCreation, tokens
+    try {
+      session.startTransaction()
 
-    if (existingUser) {
-      throw new AppError(409, 'Email already exists')
+      const existingUser = await UserModel.findOne({ email }).session(session)
+      if (existingUser) {
+        throw new AppError(409, 'Email already exists')
+      }
+
+      await isUsernameAvailable(username)
+
+      user = await UserModel.create([payload], { session })
+      user = user[0]
+      if (!user) {
+        throw new AppError(500, 'Failed to create user')
+      }
+
+      spaceCreation = await SpaceModel.create([{ user: user._id }], { session })
+      spaceCreation = spaceCreation[0]
+      if (!spaceCreation) {
+        throw new AppError(500, 'Failed to create user space')
+      }
+
+      user.space = spaceCreation._id
+      await user.save({ session })
+
+      // Create tokens
+      tokens = UserService.createTokenHandler({
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        permissions: user.permissions,
+      })
+      if (!tokens) {
+        throw new AppError(500, 'Token creation failed')
+      }
+
+      await session.commitTransaction()
+    } catch (error) {
+      await session.abortTransaction()
+      session.endSession()
+      throw error
     }
-
-    await isUsernameAvailable(username)
-
-    const user = await UserModel.create(payload)
-    if (!user) {
-      throw new AppError(500, 'Failed to create user')
-    }
-
-    // Create tokens
-    const tokens = UserService.createTokenHandler({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      permissions: user.permissions,
-    })
-
-    if (!tokens) {
-      throw new AppError(500, 'Token creation failed')
-    }
+    session.endSession()
 
     res.cookie('accessToken', tokens.accessToken)
     res.cookie('refreshToken', tokens.refreshToken)
@@ -47,7 +68,7 @@ const userOnboardingByEmailPassword = catchAsync(
       statusCode: 201,
       success: true,
       message: 'Registration successful',
-      data: user,
+      data: { user, spaceCreation },
     })
   },
 )
@@ -89,7 +110,6 @@ const loginWithEmailPassword = catchAsync(
     // Create tokens
     const tokens = UserService.createTokenHandler({
       id: user._id,
-      name: user.name,
       email: user.email,
       role: user.role,
       permissions: user.permissions,
@@ -131,7 +151,6 @@ const onboardingWithGoogle = catchAsync(async (req: Request, res: Response) => {
 
       const tokens = UserService.createTokenHandler({
         id: existingUser._id,
-        name: existingUser.name,
         email: existingUser.email,
         role: existingUser.role,
         permissions: existingUser.permissions,

@@ -1,14 +1,14 @@
+import { ObjectId } from 'mongoose'
+
 export type TUser = {
   _id?: string
-  name: string
-  username?: string
+  username: string
   email: string
-  mobileNumber?: string
   password?: string
+  space: ObjectId
   isBanned: boolean
   role: string[]
   permissions: string[]
-  isSetInfo: boolean
 }
 
 export const UserRole = {

@@ -21,6 +21,10 @@ const UserSchema = new Schema<TUser>(
       required: false,
       default: '',
     },
+    space: {
+      type: Schema.Types.ObjectId,
+      ref: 'Space',
+    },
     isBanned: {
       type: Boolean,
       default: false,
