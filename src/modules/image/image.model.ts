@@ -31,6 +31,11 @@ const imageSchema = new Schema<TImage>(
       type: String,
       required: true,
     },
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
     folderId: {
       type: Schema.Types.ObjectId,
       ref: 'Folder',

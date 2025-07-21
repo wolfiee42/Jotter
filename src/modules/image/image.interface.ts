@@ -3,6 +3,7 @@ import { ObjectId } from 'mongoose'
 export type TImage = {
   name: string
   _id?: ObjectId
+  user: ObjectId
   folderId?: ObjectId
   properties: TImageProperties
 }
