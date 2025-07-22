@@ -6,6 +6,7 @@ import { NoteRouter } from '../modules/note/note.route'
 import { PDFRouter } from '../modules/pdf/pdf.route'
 import { favoriteRouter } from '../modules/favorite/favorite.route'
 import { CalenderRouter } from '../modules/calender/calender.route'
+import { HomeRoute } from '../modules/home/home.route'
 
 const router = Router()
 
@@ -13,6 +14,10 @@ const applicationRoutes = [
   {
     path: '/auth',
     route: UserRoute,
+  },
+  {
+    path: '/home',
+    route: HomeRoute,
   },
   {
     path: '/folder',
