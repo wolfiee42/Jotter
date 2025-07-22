@@ -52,4 +52,11 @@ router.patch(
 
 router.get('/logout', UserService.clearToken)
 
+router.delete(
+  '/delete-account',
+  Authentication,
+  Authorize({ role: 'user' }),
+  UserController.deleteAccount,
+)
+
 export const UserRoute = router

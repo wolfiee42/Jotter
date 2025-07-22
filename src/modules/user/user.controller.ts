@@ -311,6 +311,29 @@ const changePasswordUsingOTP = catchAsync(
   },
 )
 
+const deleteAccount = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+
+  if (!userId) {
+    throw new AppError(401, 'Unauthorized access')
+  }
+
+  const user = await UserModel.findById(userId)
+  if (!user) {
+    throw new AppError(404, 'User not found')
+  }
+  await UserModel.deleteOne({ _id: userId })
+  await SpaceModel.deleteOne({ user: userId })
+  await FavoriteModel.deleteOne({ user: userId })
+  await OTPModel.deleteMany({ email: user.email })
+
+  return sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Account deleted successfully',
+  })
+})
+
 export const UserController = {
   userOnboardingByEmailPassword,
   loginWithEmailPassword,
@@ -319,4 +342,5 @@ export const UserController = {
   forgetPassword,
   otpVerification,
   changePasswordUsingOTP,
+  deleteAccount,
 }
