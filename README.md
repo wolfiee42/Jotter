@@ -5,6 +5,7 @@ Jotter is a modern, modular, and scalable backend for a personal knowledge manag
 ## Live Link
 
 [Jotter Live Link](https://jotter-liart.vercel.app/)
+[Postman Live Link](https://www.postman.com/galactic-escape-203096/workspace/jotter-storage-management-system/collection/45110961-eb8f2933-b345-4d9d-afe0-78c4fc36f1c6?action=share&source=copy-link&creator=45110961)
 
 ## Features
 
