@@ -2,6 +2,10 @@
 
 Jotter is a modern, modular, and scalable backend for a personal knowledge management and file storage application. It supports uploading, organizing, and managing images, notes, and PDFs, with foldering, favorites, and transactional safety using MongoDB and Cloudinary.
 
+## Live Link
+
+[Jotter Live Link](https://jotter-liart.vercel.app/)
+
 ## Features
 
 - User authentication and onboarding
