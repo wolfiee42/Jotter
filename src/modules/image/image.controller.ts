@@ -4,6 +4,7 @@ import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { ImageModel } from './image.model'
+import { FolderModel } from '../folder/folder.model'
 
 const uploadImageController = catchAsync(
   async (req: Request, res: Response) => {
@@ -88,9 +89,38 @@ const updateImageController = catchAsync(
   },
 )
 
+const deleteImageController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const id = req.params.id
+
+    const image = await ImageModel.findOne({ user: userId, _id: id })
+
+    if (!image) {
+      throw new Error(
+        'Image not found or you do not have permission to delete it',
+      )
+    }
+
+    await FolderModel.updateOne(
+      { _id: image.folderId },
+      { $pull: { imageList: image._id } },
+    )
+
+    await ImageModel.deleteOne({ _id: id })
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: 'Image Deleted Successfully.',
+    })
+  },
+)
+
 export const imageController = {
   uploadImageController,
   getAllImages,
   getSingleImage,
   updateImageController,
+  deleteImageController,
 }

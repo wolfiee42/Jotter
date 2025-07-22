@@ -37,4 +37,11 @@ router.patch(
   FolderController.updateFolderController,
 )
 
+router.delete(
+  '/:id/delete',
+  Authentication,
+  Authorize({ role: 'user' }),
+  FolderController.deleteFolderController,
+)
+
 export const folderRoute = router

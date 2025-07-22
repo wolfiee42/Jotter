@@ -35,4 +35,11 @@ router.patch(
   PDFController.updatePDFController,
 )
 
+router.delete(
+  '/:id/delete',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.deletePDFController,
+)
+
 export const PDFRouter = router

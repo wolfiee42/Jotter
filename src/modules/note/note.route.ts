@@ -38,4 +38,11 @@ router.patch(
   NoteController.updateNoteController,
 )
 
+router.delete(
+  '/:id/delete',
+  Authentication,
+  Authorize({ role: 'user' }),
+  NoteController.deleteNoteController,
+)
+
 export const NoteRouter = router

@@ -38,4 +38,11 @@ router.patch(
   imageController.updateImageController,
 )
 
+router.delete(
+  '/:id/delete',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.deleteImageController,
+)
+
 export const ImageRouter = router

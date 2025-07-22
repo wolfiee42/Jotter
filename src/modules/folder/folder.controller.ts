@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { FolderService } from './folder.service'
 import { FolderModel } from './folder.model'
+import AppError from '../../errors/appError'
 
 const createFolderController = catchAsync(
   async (req: Request, res: Response) => {
@@ -92,9 +93,43 @@ const updateFolderController = catchAsync(
   },
 )
 
+const deleteFolderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const id = req.params.id
+
+    const folder = await FolderModel.findOne({ user: userId, _id: id })
+
+    if (!folder) {
+      throw new AppError(404, 'No Folder Found')
+    }
+
+    if (
+      (folder.imageList && folder.imageList.length > 0) ||
+      (folder.pdfList && folder.pdfList.length > 0) ||
+      (folder.noteList && folder.noteList.length > 0)
+    ) {
+      throw new AppError(
+        400,
+        'Cannot delete folder: Remove all images, notes, and PDFs first.',
+      )
+    }
+    const deleteFolder = await FolderModel.deleteOne({ _id: id })
+    if (!deleteFolder) {
+      throw new AppError(404, 'Did not able t Delete folder.')
+    }
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Folder updated successfully',
+    })
+  },
+)
+
 export const FolderController = {
   createFolderController,
   getAllFolders,
   getSingleFolder,
   updateFolderController,
+  deleteFolderController,
 }

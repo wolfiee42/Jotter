@@ -4,6 +4,7 @@ import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { PDFService } from './pdf.service'
 import { PDFModel } from './pdf.model'
+import { FolderModel } from '../folder/folder.model'
 
 const uploadPDFController = catchAsync(async (req: Request, res: Response) => {
   const body = JSON.parse(req.body.data || '{}')
@@ -78,9 +79,36 @@ const updatePDFController = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const deletePDFController = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const pdf = await PDFModel.findOne({ user: userId, _id: id })
+
+  if (!pdf) {
+    throw new Error('PDF not found')
+  }
+
+  if (pdf.folderId) {
+    await FolderModel.updateOne(
+      { _id: pdf.folderId },
+      { $pull: { pdfList: pdf._id } },
+    )
+  }
+
+  await PDFModel.deleteOne({ _id: id })
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'PDF deleted successfully',
+  })
+})
+
 export const PDFController = {
   uploadPDFController,
   getAllPDF,
   getSinglePDF,
   updatePDFController,
+  deletePDFController,
 }

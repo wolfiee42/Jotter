@@ -4,6 +4,7 @@ import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { NoteService } from './note.service'
 import { NoteModel } from './note.model'
+import { FolderModel } from '../folder/folder.model'
 
 const uploadNoteController = catchAsync(async (req: Request, res: Response) => {
   const body = JSON.parse(req.body.data || '{}')
@@ -81,9 +82,36 @@ const updateNoteController = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const deleteNoteController = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const note = await NoteModel.findOne({ user: userId, _id: id })
+
+  if (!note) {
+    throw new Error('No Note Found')
+  }
+
+  if (note.folderId) {
+    await FolderModel.updateOne(
+      { _id: note.folderId },
+      { $pull: { noteList: note._id } },
+    )
+  }
+
+  await note.deleteOne()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Note deleted successfully',
+  })
+})
+
 export const NoteController = {
   uploadNoteController,
   getAllNote,
   getSingleNotes,
   updateNoteController,
+  deleteNoteController,
 }
