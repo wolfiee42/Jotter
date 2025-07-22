@@ -52,7 +52,7 @@ const updateSpaceWithNote = async (
   if (!space) {
     throw new Error('Space not found')
   }
-  space.noteList.push(noteId)
+  space.noteList.unshift(noteId)
   await space.save({ session })
 }
 

@@ -52,7 +52,7 @@ const updateSpaceWithPDF = async (
   if (!space) {
     throw new Error('Space not found')
   }
-  space.pdfList.push(PDFId)
+  space.pdfList.unshift(PDFId)
   await space.save({ session })
 }
 

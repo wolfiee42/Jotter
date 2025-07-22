@@ -52,7 +52,7 @@ const updateSpaceWithImage = async (
   if (!space) {
     throw new Error('Space not found')
   }
-  space.imageList.push(imageId)
+  space.imageList.unshift(imageId)
   await space.save({ session })
 }
 

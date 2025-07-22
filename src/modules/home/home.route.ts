@@ -12,4 +12,11 @@ router.get(
   HomeController.getData,
 )
 
+router.get(
+  '/recent-uploads',
+  Authentication,
+  Authorize({ role: 'user' }),
+  HomeController.getRecentUploads,
+)
+
 export const HomeRoute = router
