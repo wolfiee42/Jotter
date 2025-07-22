@@ -49,4 +49,11 @@ router.post(
   PDFController.duplicatePDFController,
 )
 
+router.patch(
+  '/:id/connect-folder',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.connectPDFToFolderController,
+)
+
 export const PDFRouter = router

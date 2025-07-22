@@ -52,4 +52,11 @@ router.post(
   NoteController.duplicateNoteController,
 )
 
+router.patch(
+  '/:id/connect-folder',
+  Authentication,
+  Authorize({ role: 'user' }),
+  NoteController.connectNoteToFolderController,
+)
+
 export const NoteRouter = router

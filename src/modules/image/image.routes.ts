@@ -52,4 +52,11 @@ router.post(
   imageController.duplicateImageController,
 )
 
+router.patch(
+  '/:id/connect-folder',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.connectImageToFolderController,
+)
+
 export const ImageRouter = router

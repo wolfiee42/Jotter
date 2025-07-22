@@ -141,6 +141,48 @@ const duplicatePDFController = catchAsync(
   },
 )
 
+const connectPDFToFolderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const pdfId = req.params.id
+    const { folderId } = req.body
+
+    if (!folderId) {
+      throw new Error('No folderId provided')
+    }
+
+    const pdf = await PDFModel.findOne({ user: userId, _id: pdfId })
+    if (!pdf) {
+      throw new Error(
+        'PDF not found or you do not have permission to connect it',
+      )
+    }
+
+    if (pdf.folderId) {
+      return sendResponse(res, {
+        success: false,
+        statusCode: 400,
+        message: 'PDF is already linked to a folder.',
+      })
+    }
+
+    pdf.folderId = folderId
+    await pdf.save()
+
+    await FolderModel.updateOne(
+      { _id: folderId },
+      { $addToSet: { pdfList: pdf._id } },
+    )
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: 'PDF connected to folder successfully.',
+      data: pdf,
+    })
+  },
+)
+
 export const PDFController = {
   uploadPDFController,
   getAllPDF,
@@ -148,4 +190,5 @@ export const PDFController = {
   updatePDFController,
   deletePDFController,
   duplicatePDFController,
+  connectPDFToFolderController,
 }

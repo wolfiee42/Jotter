@@ -153,6 +153,48 @@ const duplicateImageController = catchAsync(
   },
 )
 
+const connectImageToFolderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const imageId = req.params.id
+    const { folderId } = req.body
+
+    if (!folderId) {
+      throw new Error('No folderId provided')
+    }
+
+    const image = await ImageModel.findOne({ user: userId, _id: imageId })
+    if (!image) {
+      throw new Error(
+        'Image not found or you do not have permission to connect it',
+      )
+    }
+
+    if (image.folderId) {
+      return sendResponse(res, {
+        success: false,
+        statusCode: 400,
+        message: 'Image is already linked to a folder.',
+      })
+    }
+
+    image.folderId = folderId
+    await image.save()
+
+    await FolderModel.updateOne(
+      { _id: folderId },
+      { $addToSet: { imageList: image._id } },
+    )
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: 'Image connected to folder successfully.',
+      data: image,
+    })
+  },
+)
+
 export const imageController = {
   uploadImageController,
   getAllImages,
@@ -160,4 +202,5 @@ export const imageController = {
   updateImageController,
   deleteImageController,
   duplicateImageController,
+  connectImageToFolderController,
 }

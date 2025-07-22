@@ -144,6 +144,48 @@ const duplicateNoteController = catchAsync(
   },
 )
 
+const connectNoteToFolderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const noteId = req.params.id
+    const { folderId } = req.body
+
+    if (!folderId) {
+      throw new Error('No folderId provided')
+    }
+
+    const note = await NoteModel.findOne({ user: userId, _id: noteId })
+    if (!note) {
+      throw new Error(
+        'Note not found or you do not have permission to connect it',
+      )
+    }
+
+    if (note.folderId) {
+      return sendResponse(res, {
+        success: false,
+        statusCode: 400,
+        message: 'Note is already linked to a folder.',
+      })
+    }
+
+    note.folderId = folderId
+    await note.save()
+
+    await FolderModel.updateOne(
+      { _id: folderId },
+      { $addToSet: { noteList: note._id } },
+    )
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: 'Note connected to folder successfully.',
+      data: note,
+    })
+  },
+)
+
 export const NoteController = {
   uploadNoteController,
   getAllNote,
@@ -151,4 +193,5 @@ export const NoteController = {
   updateNoteController,
   deleteNoteController,
   duplicateNoteController,
+  connectNoteToFolderController,
 }
