@@ -44,25 +44,29 @@ const uploadFileService = async (
 const updateSpaceWithImage = async (
   imageId: ObjectId,
   userId: ObjectId,
+  session?: any,
 ): Promise<void> => {
-  const space = await SpaceModel.findOne({ user: userId })
+  const space = await SpaceModel.findOne({ user: userId }).session(
+    session || null,
+  )
   if (!space) {
     throw new Error('Space not found')
   }
-
   space.imageList.push(imageId)
-  await space.save()
+  await space.save({ session })
 }
+
 const updateFolderWithImage = async (
   imageId: ObjectId,
   folderId: ObjectId,
+  session?: any,
 ): Promise<void> => {
-  const folder = await FolderModel.findById(folderId)
+  const folder = await FolderModel.findById(folderId).session(session || null)
   if (!folder) {
     throw new Error('Folder not found')
   }
-  folder?.imageList.push(imageId)
-  await folder.save()
+  folder.imageList.push(imageId)
+  await folder.save({ session })
 }
 
 export const imageService = {

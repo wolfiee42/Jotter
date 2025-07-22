@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import mongoose from 'mongoose'
 import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
@@ -15,20 +16,34 @@ const uploadPDFController = catchAsync(async (req: Request, res: Response) => {
     throw new Error('No file uploaded')
   }
 
-  const savedFile = await PDFService.uploadFileService(file, body, id)
-  await PDFService.updateSpaceWithPDF(savedFile._id as ObjectId, id as ObjectId)
-  if (body.folderId) {
-    await PDFService.updateFolderWithPDF(
-      savedFile._id as ObjectId,
-      body.folderId as ObjectId,
-    )
+  // Use a session for transactional consistency
+  const session = await mongoose.startSession()
+  let savedFile
+  try {
+    await session.withTransaction(async () => {
+      savedFile = await PDFService.uploadFileService(file, body, id)
+      await PDFService.updateSpaceWithPDF(
+        savedFile._id as ObjectId,
+        id as ObjectId,
+        session,
+      )
+      if (body.folderId) {
+        await PDFService.updateFolderWithPDF(
+          savedFile._id as ObjectId,
+          body.folderId as ObjectId,
+          session,
+        )
+      }
+    })
+    sendResponse(res, {
+      success: true,
+      message: 'PDF uploaded successfully',
+      statusCode: 201,
+      data: savedFile,
+    })
+  } finally {
+    await session.endSession()
   }
-  sendResponse(res, {
-    success: true,
-    message: 'PDF uploaded successfully',
-    statusCode: 201,
-    data: savedFile,
-  })
 })
 
 const getAllPDF = catchAsync(async (req: Request, res: Response) => {

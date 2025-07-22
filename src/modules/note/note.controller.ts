@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import catchAsync from '../../utils/catchAsync'
 import sendResponse from '../../utils/sendResponse'
-import { ObjectId } from 'mongoose'
+import mongoose, { ObjectId } from 'mongoose'
 import { NoteService } from './note.service'
 import { NoteModel } from './note.model'
 import { FolderModel } from '../folder/folder.model'
@@ -15,23 +15,33 @@ const uploadNoteController = catchAsync(async (req: Request, res: Response) => {
     throw new Error('No file uploaded')
   }
 
-  const savedFile = await NoteService.uploadFileService(file, body, id)
-  await NoteService.updateSpaceWithNote(
-    savedFile._id as ObjectId,
-    id as ObjectId,
-  )
-  if (body.folderId) {
-    await NoteService.updateFolderWithNote(
-      savedFile._id as ObjectId,
-      body.folderId as ObjectId,
-    )
+  const session = await mongoose.startSession()
+  let savedFile
+  try {
+    await session.withTransaction(async () => {
+      savedFile = await NoteService.uploadFileService(file, body, id)
+      await NoteService.updateSpaceWithNote(
+        savedFile._id as ObjectId,
+        id as ObjectId,
+        session,
+      )
+      if (body.folderId) {
+        await NoteService.updateFolderWithNote(
+          savedFile._id as ObjectId,
+          body.folderId as ObjectId,
+          session,
+        )
+      }
+    })
+    sendResponse(res, {
+      success: true,
+      message: 'Note uploaded successfully',
+      statusCode: 201,
+      data: savedFile,
+    })
+  } finally {
+    await session.endSession()
   }
-  sendResponse(res, {
-    success: true,
-    message: 'Note uploaded successfully',
-    statusCode: 201,
-    data: savedFile,
-  })
 })
 
 const getAllNote = catchAsync(async (req: Request, res: Response) => {

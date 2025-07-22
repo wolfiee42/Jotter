@@ -17,23 +17,35 @@ const uploadImageController = catchAsync(
       throw new Error('No file uploaded')
     }
 
-    const savedFile = await imageService.uploadFileService(file, body, id)
-    await imageService.updateSpaceWithImage(
-      savedFile._id as ObjectId,
-      id as ObjectId,
-    )
-    if (body.folderId) {
-      await imageService.updateFolderWithImage(
+    const session = await ImageModel.startSession()
+    session.startTransaction()
+    try {
+      const savedFile = await imageService.uploadFileService(file, body, id)
+      await imageService.updateSpaceWithImage(
         savedFile._id as ObjectId,
-        body.folderId as ObjectId,
+        id as ObjectId,
+        session,
       )
+      if (body.folderId) {
+        await imageService.updateFolderWithImage(
+          savedFile._id as ObjectId,
+          body.folderId as ObjectId,
+          session,
+        )
+      }
+      await session.commitTransaction()
+      sendResponse(res, {
+        success: true,
+        message: 'Image uploaded successfully',
+        statusCode: 201,
+        data: savedFile,
+      })
+    } catch (err) {
+      await session.abortTransaction()
+      throw err
+    } finally {
+      session.endSession()
     }
-    sendResponse(res, {
-      success: true,
-      message: 'Image uploaded successfully',
-      statusCode: 201,
-      data: savedFile,
-    })
   },
 )
 
@@ -199,69 +211,95 @@ const connectImageToFolderController = catchAsync(
 const makeImageFavorite = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id
   const id = req.params.id
+  const session = await ImageModel.startSession()
+  session.startTransaction()
+  try {
+    const image = await ImageModel.findOne({ _id: id, user: userId }).session(
+      session,
+    )
+    if (!image) {
+      throw new Error('Image not found')
+    }
 
-  const image = await ImageModel.findOne({ _id: id, user: userId })
-  if (!image) {
-    throw new Error('Image not found')
-  }
+    const favourite = await FavoriteModel.findOne({ user: userId }).session(
+      session,
+    )
+    if (!favourite) {
+      throw new Error('Favorite not found')
+    }
 
-  const favourite = await FavoriteModel.findOne({ user: userId })
-  if (!favourite) {
-    throw new Error('Favorite not found')
-  }
+    if (favourite.imageList.includes(image._id)) {
+      await session.abortTransaction()
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Image is already favorited',
+      })
+    }
 
-  if (favourite.imageList.includes(image._id)) {
-    return sendResponse(res, {
-      statusCode: 400,
-      success: false,
-      message: 'Image is already favorited',
+    favourite.imageList.push(image._id)
+    await favourite.save({ session })
+    await session.commitTransaction()
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Image favorite status updated successfully',
+      data: image,
     })
+  } catch (err) {
+    await session.abortTransaction()
+    throw err
+  } finally {
+    session.endSession()
   }
-
-  favourite.imageList.push(image._id)
-  await favourite.save()
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Image favorite status updated successfully',
-    data: image,
-  })
 })
 
 const unfavoriteImage = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id
   const id = req.params.id
+  const session = await ImageModel.startSession()
+  session.startTransaction()
+  try {
+    const image = await ImageModel.findOne({ _id: id, user: userId }).session(
+      session,
+    )
+    if (!image) {
+      throw new Error('Image not found')
+    }
 
-  const image = await ImageModel.findOne({ _id: id, user: userId })
-  if (!image) {
-    throw new Error('Image not found')
-  }
+    const favourite = await FavoriteModel.findOne({ user: userId }).session(
+      session,
+    )
+    if (!favourite) {
+      throw new Error('Favorite not found')
+    }
 
-  const favourite = await FavoriteModel.findOne({ user: userId })
-  if (!favourite) {
-    throw new Error('Favorite not found')
-  }
+    if (!favourite.imageList.includes(image._id)) {
+      await session.abortTransaction()
+      return sendResponse(res, {
+        statusCode: 400,
+        success: false,
+        message: 'Image is not favorited',
+      })
+    }
 
-  if (!favourite.imageList.includes(image._id)) {
-    return sendResponse(res, {
-      statusCode: 400,
-      success: false,
-      message: 'Image is not favorited',
+    favourite.imageList = favourite.imageList.filter(
+      imageId => imageId.toString() !== image._id.toString(),
+    )
+    await favourite.save({ session })
+    await session.commitTransaction()
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Image unfavorited successfully',
+      data: image,
     })
+  } catch (err) {
+    await session.abortTransaction()
+    throw err
+  } finally {
+    session.endSession()
   }
-
-  favourite.imageList = favourite.imageList.filter(
-    imageId => imageId.toString() !== image._id.toString(),
-  )
-  await favourite.save()
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Image unfavorited successfully',
-    data: image,
-  })
 })
 
 export const imageController = {
