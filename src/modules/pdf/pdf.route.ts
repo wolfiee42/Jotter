@@ -56,4 +56,18 @@ router.patch(
   PDFController.connectPDFToFolderController,
 )
 
+router.patch(
+  '/:id/favorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.makePDFFavorite,
+)
+
+router.patch(
+  '/:id/unfavorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.unfavoritePDF,
+)
+
 export const PDFRouter = router

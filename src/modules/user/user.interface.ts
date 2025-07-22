@@ -6,6 +6,7 @@ export type TUser = {
   email: string
   password?: string
   space: ObjectId
+  favourite: ObjectId
   isBanned: boolean
   role: string[]
   permissions: string[]

@@ -5,6 +5,7 @@ import { ObjectId } from 'mongoose'
 import { PDFService } from './pdf.service'
 import { PDFModel } from './pdf.model'
 import { FolderModel } from '../folder/folder.model'
+import { FavoriteModel } from '../favourite/favorite.model'
 
 const uploadPDFController = catchAsync(async (req: Request, res: Response) => {
   const body = JSON.parse(req.body.data || '{}')
@@ -182,6 +183,73 @@ const connectPDFToFolderController = catchAsync(
     })
   },
 )
+const makePDFFavorite = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const pdf = await PDFModel.findOne({ _id: id, user: userId })
+  if (!pdf) {
+    throw new Error('PDF not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new Error('Favorite not found')
+  }
+
+  if (favourite.pdfList.includes(pdf._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'PDF is already favorited',
+    })
+  }
+
+  favourite.pdfList.push(pdf._id)
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'PDF favorite status updated successfully',
+    data: pdf,
+  })
+})
+
+const unfavoritePDF = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const pdf = await PDFModel.findOne({ _id: id, user: userId })
+  if (!pdf) {
+    throw new Error('PDF not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new Error('Favorite not found')
+  }
+
+  if (!favourite.pdfList.includes(pdf._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'PDF is not favorited',
+    })
+  }
+
+  favourite.pdfList = favourite.pdfList.filter(
+    pdfId => pdfId.toString() !== pdf._id.toString(),
+  )
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'PDF unfavorited successfully',
+    data: pdf,
+  })
+})
 
 export const PDFController = {
   uploadPDFController,
@@ -191,4 +259,6 @@ export const PDFController = {
   deletePDFController,
   duplicatePDFController,
   connectPDFToFolderController,
+  makePDFFavorite,
+  unfavoritePDF,
 }

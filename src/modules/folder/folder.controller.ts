@@ -4,6 +4,7 @@ import sendResponse from '../../utils/sendResponse'
 import { FolderService } from './folder.service'
 import { FolderModel } from './folder.model'
 import AppError from '../../errors/appError'
+import { FavoriteModel } from '../favourite/favorite.model'
 
 const createFolderController = catchAsync(
   async (req: Request, res: Response) => {
@@ -126,10 +127,82 @@ const deleteFolderController = catchAsync(
   },
 )
 
+const makeFolderFavorite = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const folder = await FolderModel.findOne({ _id: id, user: userId })
+
+  if (!folder) {
+    throw new AppError(404, 'Folder not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new AppError(404, 'Favorite not found')
+  }
+
+  if (favourite.folderList.includes(folder._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Folder is already favorited',
+    })
+  }
+
+  favourite.folderList.push(folder._id)
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Folder favorite status updated successfully',
+    data: folder,
+  })
+})
+
+const unfavoriteFolder = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const folder = await FolderModel.findOne({ _id: id, user: userId })
+
+  if (!folder) {
+    throw new AppError(404, 'Folder not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new AppError(404, 'Favorite not found')
+  }
+
+  if (!favourite.folderList.includes(folder._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Folder is not favorited',
+    })
+  }
+
+  favourite.folderList = favourite.folderList.filter(
+    folderId => folderId.toString() !== folder._id.toString(),
+  )
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Folder unfavorited successfully',
+    data: folder,
+  })
+})
+
 export const FolderController = {
   createFolderController,
   getAllFolders,
   getSingleFolder,
   updateFolderController,
   deleteFolderController,
+  makeFolderFavorite,
+  unfavoriteFolder,
 }

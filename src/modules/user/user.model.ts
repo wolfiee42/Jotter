@@ -25,6 +25,10 @@ const UserSchema = new Schema<TUser>(
       type: Schema.Types.ObjectId,
       ref: 'Space',
     },
+    favourite: {
+      type: Schema.Types.ObjectId,
+      ref: 'Favorite',
+    },
     isBanned: {
       type: Boolean,
       default: false,

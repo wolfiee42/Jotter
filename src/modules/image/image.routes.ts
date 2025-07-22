@@ -59,4 +59,18 @@ router.patch(
   imageController.connectImageToFolderController,
 )
 
+router.patch(
+  '/:id/favorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.makeImageFavorite,
+)
+
+router.patch(
+  '/:id/unfavorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.unfavoriteImage,
+)
+
 export const ImageRouter = router

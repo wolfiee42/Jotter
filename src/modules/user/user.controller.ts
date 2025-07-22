@@ -9,6 +9,7 @@ import bcrypt from 'bcryptjs'
 import mongoose from 'mongoose'
 import { sendEmail } from '../../utils/sendEmail'
 import { SpaceModel } from '../space/space.model'
+import { FavoriteModel } from '../favourite/favorite.model'
 
 const userOnboardingByEmailPassword = catchAsync(
   async (req: Request, res: Response) => {
@@ -16,7 +17,7 @@ const userOnboardingByEmailPassword = catchAsync(
     const payload = req.body
 
     const session = await mongoose.startSession()
-    let user, spaceCreation, tokens
+    let user, spaceCreation, favouriteCreation, tokens
     try {
       session.startTransaction()
 
@@ -39,7 +40,16 @@ const userOnboardingByEmailPassword = catchAsync(
         throw new AppError(500, 'Failed to create user space')
       }
 
+      favouriteCreation = await FavoriteModel.create([{ user: user._id }], {
+        session,
+      })
+      favouriteCreation = favouriteCreation[0]
+      if (!favouriteCreation) {
+        throw new AppError(500, 'Failed to create user favourite')
+      }
+
       user.space = spaceCreation._id
+      user.favourite = favouriteCreation._id
       await user.save({ session })
 
       // Create tokens

@@ -44,4 +44,18 @@ router.delete(
   FolderController.deleteFolderController,
 )
 
+router.patch(
+  '/:id/favorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  FolderController.makeFolderFavorite,
+)
+
+router.patch(
+  '/:id/unfavorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  FolderController.unfavoriteFolder,
+)
+
 export const folderRoute = router

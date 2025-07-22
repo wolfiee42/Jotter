@@ -5,6 +5,7 @@ import { ObjectId } from 'mongoose'
 import { NoteService } from './note.service'
 import { NoteModel } from './note.model'
 import { FolderModel } from '../folder/folder.model'
+import { FavoriteModel } from '../favourite/favorite.model'
 
 const uploadNoteController = catchAsync(async (req: Request, res: Response) => {
   const body = JSON.parse(req.body.data || '{}')
@@ -186,6 +187,74 @@ const connectNoteToFolderController = catchAsync(
   },
 )
 
+const makeNoteFavorite = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const note = await NoteModel.findOne({ _id: id, user: userId })
+  if (!note) {
+    throw new Error('Note not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new Error('Favorite not found')
+  }
+
+  if (favourite.noteList.includes(note._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Note is already favorited',
+    })
+  }
+
+  favourite.noteList.push(note._id)
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Note favorite status updated successfully',
+    data: note,
+  })
+})
+
+const unfavoriteNote = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const note = await NoteModel.findOne({ _id: id, user: userId })
+  if (!note) {
+    throw new Error('Note not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new Error('Favorite not found')
+  }
+
+  if (!favourite.noteList.includes(note._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Note is not favorited',
+    })
+  }
+
+  favourite.noteList = favourite.noteList.filter(
+    noteId => noteId.toString() !== note._id.toString(),
+  )
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Note unfavorited successfully',
+    data: note,
+  })
+})
+
 export const NoteController = {
   uploadNoteController,
   getAllNote,
@@ -194,4 +263,6 @@ export const NoteController = {
   deleteNoteController,
   duplicateNoteController,
   connectNoteToFolderController,
+  makeNoteFavorite,
+  unfavoriteNote,
 }

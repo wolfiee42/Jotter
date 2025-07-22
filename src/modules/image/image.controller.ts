@@ -5,6 +5,7 @@ import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { ImageModel } from './image.model'
 import { FolderModel } from '../folder/folder.model'
+import { FavoriteModel } from '../favourite/favorite.model'
 
 const uploadImageController = catchAsync(
   async (req: Request, res: Response) => {
@@ -195,6 +196,74 @@ const connectImageToFolderController = catchAsync(
   },
 )
 
+const makeImageFavorite = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const image = await ImageModel.findOne({ _id: id, user: userId })
+  if (!image) {
+    throw new Error('Image not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new Error('Favorite not found')
+  }
+
+  if (favourite.imageList.includes(image._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Image is already favorited',
+    })
+  }
+
+  favourite.imageList.push(image._id)
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Image favorite status updated successfully',
+    data: image,
+  })
+})
+
+const unfavoriteImage = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+
+  const image = await ImageModel.findOne({ _id: id, user: userId })
+  if (!image) {
+    throw new Error('Image not found')
+  }
+
+  const favourite = await FavoriteModel.findOne({ user: userId })
+  if (!favourite) {
+    throw new Error('Favorite not found')
+  }
+
+  if (!favourite.imageList.includes(image._id)) {
+    return sendResponse(res, {
+      statusCode: 400,
+      success: false,
+      message: 'Image is not favorited',
+    })
+  }
+
+  favourite.imageList = favourite.imageList.filter(
+    imageId => imageId.toString() !== image._id.toString(),
+  )
+  await favourite.save()
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Image unfavorited successfully',
+    data: image,
+  })
+})
+
 export const imageController = {
   uploadImageController,
   getAllImages,
@@ -203,4 +272,6 @@ export const imageController = {
   deleteImageController,
   duplicateImageController,
   connectImageToFolderController,
+  makeImageFavorite,
+  unfavoriteImage,
 }

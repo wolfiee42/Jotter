@@ -59,4 +59,18 @@ router.patch(
   NoteController.connectNoteToFolderController,
 )
 
+router.patch(
+  '/:id/favorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  NoteController.makeNoteFavorite,
+)
+
+router.patch(
+  '/:id/unfavorite',
+  Authentication,
+  Authorize({ role: 'user' }),
+  NoteController.unfavoriteNote,
+)
+
 export const NoteRouter = router
