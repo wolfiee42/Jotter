@@ -5,7 +5,7 @@ import sendResponse from '../../utils/sendResponse'
 import { ObjectId } from 'mongoose'
 import { ImageModel } from './image.model'
 import { FolderModel } from '../folder/folder.model'
-import { FavoriteModel } from '../favourite/favorite.model'
+import { FavoriteModel } from '../favorite/favorite.model'
 
 const uploadImageController = catchAsync(
   async (req: Request, res: Response) => {

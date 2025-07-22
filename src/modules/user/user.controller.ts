@@ -9,7 +9,7 @@ import bcrypt from 'bcryptjs'
 import mongoose from 'mongoose'
 import { sendEmail } from '../../utils/sendEmail'
 import { SpaceModel } from '../space/space.model'
-import { FavoriteModel } from '../favourite/favorite.model'
+import { FavoriteModel } from '../favorite/favorite.model'
 
 const userOnboardingByEmailPassword = catchAsync(
   async (req: Request, res: Response) => {

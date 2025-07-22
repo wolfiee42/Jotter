@@ -5,7 +5,7 @@ import { ObjectId } from 'mongoose'
 import { PDFService } from './pdf.service'
 import { PDFModel } from './pdf.model'
 import { FolderModel } from '../folder/folder.model'
-import { FavoriteModel } from '../favourite/favorite.model'
+import { FavoriteModel } from '../favorite/favorite.model'
 
 const uploadPDFController = catchAsync(async (req: Request, res: Response) => {
   const body = JSON.parse(req.body.data || '{}')

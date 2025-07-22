@@ -4,6 +4,7 @@ import { ImageRouter } from '../modules/image/image.routes'
 import { folderRoute } from '../modules/folder/folder.route'
 import { NoteRouter } from '../modules/note/note.route'
 import { PDFRouter } from '../modules/pdf/pdf.route'
+import { favoriteRouter } from '../modules/favorite/favorite.route'
 
 const router = Router()
 
@@ -27,6 +28,10 @@ const applicationRoutes = [
   {
     path: '/pdf',
     route: PDFRouter,
+  },
+  {
+    path: '/favorite',
+    route: favoriteRouter,
   },
 ]
 

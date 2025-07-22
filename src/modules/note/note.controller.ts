@@ -5,7 +5,7 @@ import { ObjectId } from 'mongoose'
 import { NoteService } from './note.service'
 import { NoteModel } from './note.model'
 import { FolderModel } from '../folder/folder.model'
-import { FavoriteModel } from '../favourite/favorite.model'
+import { FavoriteModel } from '../favorite/favorite.model'
 
 const uploadNoteController = catchAsync(async (req: Request, res: Response) => {
   const body = JSON.parse(req.body.data || '{}')

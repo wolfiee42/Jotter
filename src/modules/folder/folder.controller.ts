@@ -4,7 +4,7 @@ import sendResponse from '../../utils/sendResponse'
 import { FolderService } from './folder.service'
 import { FolderModel } from './folder.model'
 import AppError from '../../errors/appError'
-import { FavoriteModel } from '../favourite/favorite.model'
+import { FavoriteModel } from '../favorite/favorite.model'
 
 const createFolderController = catchAsync(
   async (req: Request, res: Response) => {
