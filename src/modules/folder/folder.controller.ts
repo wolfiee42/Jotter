@@ -23,39 +23,78 @@ const createFolderController = catchAsync(
 )
 
 const getAllFolders = catchAsync(async (req: Request, res: Response) => {
-  const id = req.user?.id;
-  const allFolders = await FolderModel.find({ user: id }).select("name updatedAt ")
+  const id = req.user?.id
+  const allFolders = await FolderModel.find({ user: id }).select(
+    'name updatedAt ',
+  )
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: "All Folders Retrived successfully.",
-    data: allFolders
+    message: 'All Folders Retrived successfully.',
+    data: allFolders,
   })
 })
 
 const getSingleFolder = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const id = req.params.id;
+  const userId = req.user?.id
+  const id = req.params.id
 
   const folder = await FolderModel.findOne({ _id: id, user: userId })
     .populate({
       path: 'imageList',
-      select: 'name createdAt properties.secure_url properties.bytes properties.width properties.height properties.format'
+      select:
+        'name createdAt properties.secure_url properties.bytes properties.width properties.height properties.format',
     })
     .populate({
       path: 'noteList',
-      select: 'name createdAt properties.secure_url properties.bytes'
+      select: 'name createdAt properties.secure_url properties.bytes',
     })
     .populate({
       path: 'pdfList',
-      select: 'name createdAt properties.secure_url properties.bytes'
-    });
+      select: 'name createdAt properties.secure_url properties.bytes',
+    })
   sendResponse(res, {
     success: true,
     statusCode: 200,
-    message: "Folder Retrived successfully.",
-    data: folder
+    message: 'Folder Retrived successfully.',
+    data: folder,
   })
 })
 
-export const FolderController = { createFolderController, getAllFolders, getSingleFolder }
+const updateFolderController = catchAsync(
+  async (req: Request, res: Response) => {
+    const { name } = req.body
+    const userId = req.user?.id
+    const id = req.params.id
+
+    const updatedFolder = await FolderModel.findOneAndUpdate(
+      { _id: id, user: userId },
+      { name },
+      { new: true },
+    )
+
+    if (!updatedFolder) {
+      return sendResponse(res, {
+        statusCode: 404,
+        success: false,
+        message: 'Folder not found',
+      })
+    }
+
+    sendResponse(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Folder updated successfully',
+      data: {
+        updatedFolder,
+      },
+    })
+  },
+)
+
+export const FolderController = {
+  createFolderController,
+  getAllFolders,
+  getSingleFolder,
+  updateFolderController,
+}

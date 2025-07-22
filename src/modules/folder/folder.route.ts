@@ -19,9 +19,22 @@ router.get(
   '/all',
   Authentication,
   Authorize({ role: 'user' }),
-  FolderController.getAllFolders
+  FolderController.getAllFolders,
 )
 
-router.get('/:id', Authentication, Authorize({ role: 'user' }), FolderController.getSingleFolder)
+router.get(
+  '/:id',
+  Authentication,
+  Authorize({ role: 'user' }),
+  FolderController.getSingleFolder,
+)
+
+router.patch(
+  '/update/:id',
+  Authentication,
+  Authorize({ role: 'user' }),
+  validateRequest(FolderValidation.updateFolderValidation),
+  FolderController.updateFolderController,
+)
 
 export const folderRoute = router

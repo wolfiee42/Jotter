@@ -7,24 +7,32 @@ import { PDFController } from './pdf.controller'
 const router = Router()
 
 router.post(
-    '/upload',
-    upload.single('pdf'),
-    Authentication,
-    Authorize({ role: 'user' }),
-    PDFController.uploadPDFController,
+  '/upload',
+  upload.single('pdf'),
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.uploadPDFController,
 )
 
 router.get(
-    '/all',
-    Authentication,
-    Authorize({ role: 'user' }),
-    PDFController.getAllPDF
+  '/all',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.getAllPDF,
 )
 
-router.get('/:id',
-    Authentication,
-    Authorize({ role: 'user' }),
-    PDFController.getSinglePDF
+router.get(
+  '/:id',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.getSinglePDF,
+)
+
+router.patch(
+  '/update/:id',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.updatePDFController,
 )
 
 export const PDFRouter = router

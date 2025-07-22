@@ -3,6 +3,8 @@ import { imageController } from './image.controller'
 import upload from '../../middleware/multer'
 import Authentication from '../../middleware/authentication'
 import { Authorize } from '../../middleware/authorize'
+import validateRequest from '../../middleware/validateRequest'
+import { imageValidation } from './image.validation'
 
 const router = Router()
 
@@ -18,12 +20,22 @@ router.get(
   '/all',
   Authentication,
   Authorize({ role: 'user' }),
-  imageController.getAllImages
+  imageController.getAllImages,
 )
 
-router.get('/:id',
+router.get(
+  '/:id',
   Authentication,
   Authorize({ role: 'user' }),
-  imageController.getSingleImage
+  imageController.getSingleImage,
 )
+
+router.patch(
+  '/update/:id',
+  Authentication,
+  Authorize({ role: 'user' }),
+  validateRequest(imageValidation.updateImageValidation),
+  imageController.updateImageController,
+)
+
 export const ImageRouter = router

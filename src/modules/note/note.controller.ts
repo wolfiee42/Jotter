@@ -5,62 +5,85 @@ import { ObjectId } from 'mongoose'
 import { NoteService } from './note.service'
 import { NoteModel } from './note.model'
 
-const uploadNoteController = catchAsync(
-    async (req: Request, res: Response) => {
-        const body = JSON.parse(req.body.data || '{}')
-        const id = req.user?.id
-        const file = req.file
-        if (!file) {
-            throw new Error('No file uploaded')
-        }
+const uploadNoteController = catchAsync(async (req: Request, res: Response) => {
+  const body = JSON.parse(req.body.data || '{}')
+  const id = req.user?.id
+  const file = req.file
+  if (!file) {
+    throw new Error('No file uploaded')
+  }
 
-        const savedFile = await NoteService.uploadFileService(file, body, id)
-        await NoteService.updateSpaceWithNote(
-            savedFile._id as ObjectId,
-            id as ObjectId,
-        )
-        if (body.folderId) {
-            await NoteService.updateFolderWithNote(
-                savedFile._id as ObjectId,
-                body.folderId as ObjectId,
-            )
-        }
-        sendResponse(res, {
-            success: true,
-            message: 'Note uploaded successfully',
-            statusCode: 201,
-            data: savedFile,
-        })
-    },
-)
+  const savedFile = await NoteService.uploadFileService(file, body, id)
+  await NoteService.updateSpaceWithNote(
+    savedFile._id as ObjectId,
+    id as ObjectId,
+  )
+  if (body.folderId) {
+    await NoteService.updateFolderWithNote(
+      savedFile._id as ObjectId,
+      body.folderId as ObjectId,
+    )
+  }
+  sendResponse(res, {
+    success: true,
+    message: 'Note uploaded successfully',
+    statusCode: 201,
+    data: savedFile,
+  })
+})
 
 const getAllNote = catchAsync(async (req: Request, res: Response) => {
-    const id = req.user?.id;
-    const allNotes = await NoteModel.find({ user: id }).select("name updatedAt ")
-    sendResponse(res, {
-        success: true,
-        statusCode: 200,
-        message: "All Notes Retrived successfully.",
-        data: allNotes
-    })
+  const id = req.user?.id
+  const allNotes = await NoteModel.find({ user: id }).select('name updatedAt ')
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'All Notes Retrived successfully.',
+    data: allNotes,
+  })
 })
 
 const getSingleNotes = catchAsync(async (req: Request, res: Response) => {
-    const userId = req.user?.id;
-    const id = req.params.id;
+  const userId = req.user?.id
+  const id = req.params.id
 
-    const note = await NoteModel.findOne({ user: userId, _id: id }).select('name createdAt properties.secure_url properties.bytes')
-    sendResponse(res, {
-        success: true,
-        statusCode: 200,
-        message: "Note Retrived Successfully.",
-        data: note
-    })
+  const note = await NoteModel.findOne({ user: userId, _id: id }).select(
+    'name createdAt properties.secure_url properties.bytes',
+  )
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Note Retrived Successfully.',
+    data: note,
+  })
 })
 
+const updateNoteController = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user?.id
+  const id = req.params.id
+  const body = req.body
+
+  const updatedNote = await NoteModel.findOneAndUpdate(
+    { user: userId, _id: id },
+    { name: body.name },
+    { new: true },
+  ).select('name updatedAt properties.secure_url properties.bytes')
+
+  if (!updatedNote) {
+    throw new Error('Note not found')
+  }
+
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'Note updated successfully',
+    data: updatedNote,
+  })
+})
 
 export const NoteController = {
-    uploadNoteController,
-    getAllNote,
-    getSingleNotes
+  uploadNoteController,
+  getAllNote,
+  getSingleNotes,
+  updateNoteController,
 }
