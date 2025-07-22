@@ -45,4 +45,11 @@ router.delete(
   imageController.deleteImageController,
 )
 
+router.post(
+  '/:id/duplicate',
+  Authentication,
+  Authorize({ role: 'user' }),
+  imageController.duplicateImageController,
+)
+
 export const ImageRouter = router

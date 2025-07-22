@@ -105,10 +105,47 @@ const deletePDFController = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const duplicatePDFController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const id = req.params.id
+    const { name } = req.body
+
+    const pdf = await PDFModel.findOne({ user: userId, _id: id })
+    if (!pdf) {
+      throw new Error(
+        'PDF not found or you do not have permission to duplicate it',
+      )
+    }
+
+    const duplicatedPDF = await PDFModel.create({
+      user: pdf.user,
+      name: name || pdf.name + ' (Copy)',
+      properties: pdf.properties,
+      folderId: pdf.folderId || null,
+    })
+
+    if (duplicatedPDF.folderId) {
+      await FolderModel.updateOne(
+        { _id: duplicatedPDF.folderId },
+        { $push: { pdfList: duplicatedPDF._id } },
+      )
+    }
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 201,
+      message: 'PDF duplicated successfully.',
+      data: duplicatedPDF,
+    })
+  },
+)
+
 export const PDFController = {
   uploadPDFController,
   getAllPDF,
   getSinglePDF,
   updatePDFController,
   deletePDFController,
+  duplicatePDFController,
 }

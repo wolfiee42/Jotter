@@ -108,10 +108,47 @@ const deleteNoteController = catchAsync(async (req: Request, res: Response) => {
   })
 })
 
+const duplicateNoteController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const id = req.params.id
+    const { name } = req.body
+
+    const note = await NoteModel.findOne({ user: userId, _id: id })
+    if (!note) {
+      throw new Error(
+        'Note not found or you do not have permission to duplicate it',
+      )
+    }
+
+    const duplicatedNote = await NoteModel.create({
+      user: note.user,
+      name: name || note.name + ' (Copy)',
+      properties: note.properties,
+      folderId: note.folderId || null,
+    })
+
+    if (duplicatedNote.folderId) {
+      await FolderModel.updateOne(
+        { _id: duplicatedNote.folderId },
+        { $push: { noteList: duplicatedNote._id } },
+      )
+    }
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 201,
+      message: 'Note duplicated successfully.',
+      data: duplicatedNote,
+    })
+  },
+)
+
 export const NoteController = {
   uploadNoteController,
   getAllNote,
   getSingleNotes,
   updateNoteController,
   deleteNoteController,
+  duplicateNoteController,
 }

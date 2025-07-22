@@ -45,4 +45,11 @@ router.delete(
   NoteController.deleteNoteController,
 )
 
+router.post(
+  '/:id/duplicate',
+  Authentication,
+  Authorize({ role: 'user' }),
+  NoteController.duplicateNoteController,
+)
+
 export const NoteRouter = router

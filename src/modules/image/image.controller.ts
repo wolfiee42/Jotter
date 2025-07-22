@@ -117,10 +117,47 @@ const deleteImageController = catchAsync(
   },
 )
 
+const duplicateImageController = catchAsync(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id
+    const id = req.params.id
+    const { name } = req.body
+
+    const image = await ImageModel.findOne({ user: userId, _id: id })
+    if (!image) {
+      throw new Error(
+        'Image not found or you do not have permission to duplicate it',
+      )
+    }
+
+    const duplicatedImage = await ImageModel.create({
+      user: image.user,
+      name: name || image.name + ' (Copy)',
+      properties: image.properties,
+      folderId: image.folderId || null,
+    })
+
+    if (duplicatedImage.folderId) {
+      await FolderModel.updateOne(
+        { _id: duplicatedImage.folderId },
+        { $push: { imageList: duplicatedImage._id } },
+      )
+    }
+
+    sendResponse(res, {
+      success: true,
+      statusCode: 201,
+      message: 'Image duplicated successfully.',
+      data: duplicatedImage,
+    })
+  },
+)
+
 export const imageController = {
   uploadImageController,
   getAllImages,
   getSingleImage,
   updateImageController,
   deleteImageController,
+  duplicateImageController,
 }

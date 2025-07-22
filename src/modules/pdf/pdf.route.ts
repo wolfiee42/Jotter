@@ -42,4 +42,11 @@ router.delete(
   PDFController.deletePDFController,
 )
 
+router.post(
+  '/:id/duplicate',
+  Authentication,
+  Authorize({ role: 'user' }),
+  PDFController.duplicatePDFController,
+)
+
 export const PDFRouter = router
